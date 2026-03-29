@@ -1,50 +1,384 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <style>
-      body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      }
-    </style>
+<head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Home Page</title>
-  </head>
-  <body>
-    <h1>URL Shortener</h1>
-    <% if (locals.id) { %>
-    <p>URL Generated: http://localhost:8001/url/<%= id %></p>
-    <% } %>
+    <title>URL Shortener</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <div>
-      <form method="POST" action="/url">
-        <label>Enter Your Original URL</label>
-        <input type="text" name="url" placeholder="https://example.com" />
-        <button type="submit">Generate</button>
-      </form>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 0 20px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            font-size: 32px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="url"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .success-message {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .success-message i {
+            font-size: 20px;
+        }
+
+        .short-url {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .short-url-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .short-url-link:hover {
+            text-decoration: underline;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .urls-section {
+            margin-top: 40px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        thead th {
+            padding: 18px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        tbody td {
+            padding: 18px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .short-id-cell {
+            font-weight: 600;
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+        }
+
+        .clicks-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .redirect-url {
+            color: #555;
+            word-break: break-all;
+            font-size: 13px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #ddd;
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            thead th {
+                padding: 12px 8px;
+                font-size: 12px;
+            }
+
+            tbody td {
+                padding: 12px 8px;
+                font-size: 12px;
+            }
+
+            table {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-link"></i>
+                URL Shortener
+            </div>
+            <a href="/login" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+
+        <div class="main-content">
+            <div class="section-title">
+                <i class="fas fa-magic"></i>
+                Create Short URL
+            </div>
+
+            <% if (locals.id) { %>
+            <div class="success-message">
+                <i class="fas fa-check-circle"></i>
+                <div>
+                    <strong>Success!</strong> Your short URL has been generated:
+                    <div class="short-url" style="margin-top: 8px;">
+                        <a href="http://localhost:8001/url/<%= id %>" target="_blank" class="short-url-link">
+                            http://localhost:8001/url/<%= id %>
+                        </a>
+                        <button class="copy-btn" onclick="copyToClipboard('http://localhost:8001/url/<%= id %>')">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+
+            <form method="POST" action="/url">
+                <div class="form-group">
+                    <label for="url">
+                        <i class="fas fa-globe"></i> Enter Your Original URL
+                    </label>
+                    <input type="url" id="url" name="url" placeholder="https://example.com" required />
+                </div>
+                <button type="submit" class="btn-generate">
+                    <i class="fas fa-compress-alt"></i> Generate Short URL
+                </button>
+            </form>
+        </div>
+
+        <% if (locals.urls && locals.urls.length > 0) { %>
+        <div class="main-content urls-section">
+            <div class="section-title">
+                <i class="fas fa-history"></i>
+                Your Short URLs (<%= urls.length %>)
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>S. No</th>
+                            <th>Short ID</th>
+                            <th>Original URL</th>
+                            <th>Clicks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% urls.forEach((url, index) => { %>
+                        <tr>
+                            <td><strong><%= index + 1 %></strong></td>
+                            <td><span class="short-id-cell"><%= url.shortId %></span></td>
+                            <td class="redirect-url"><%= url.redirectURL %></td>
+                            <td><span class="clicks-badge"><i class="fas fa-mouse"></i> <%= url.visitHistory.length %></span></td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <% } else { %>
+        <div class="main-content">
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <p>No short URLs created yet. Start by creating one above!</p>
+            </div>
+        </div>
+        <% } %>
     </div>
-    <div style="margin-top: 30px">
-      <% if (locals.urls) { %>
-      <table>
-        <thead>
-          <th>S. No</th>
-          <th>ShortID</th>
-          <th>Redirect</th>
-          <th>Clicks</th>
-        </thead>
-        <tbody>
-          <% urls.forEach((url, index) => { %>
-          <tr>
-            <td><%= index + 1 %></td>
-            <td><%= url.shortId %></td>
-            <td><%= url.redirectURL %></td>
-            <td><%= url.visitHistory.length %></td>
-          </tr>
-          <% }) %>
-        </tbody>
-      </table>
-      <% } %>
-    </div>
-  </body>
+
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            });
+        }
+    </script>
+</body>
 </html>
